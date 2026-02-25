@@ -30,7 +30,7 @@ download() {
 }
 
 build() {
-  scripts/kconfig/merge_config.sh -m -O "$(pwd)/build" \
+  bash "build/linux-${VERSION}/scripts/kconfig/merge_config.sh" -m -O "$(pwd)/build" \
     "$(pwd)/configs/microvm-kernel-ci-${ARCH}-${VERSION%.*}.config" \
     "$(pwd)/configs/overlay.config"
   make -C "build/linux-${VERSION}" O="$(pwd)/build" ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" olddefconfig
