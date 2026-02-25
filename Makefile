@@ -17,7 +17,7 @@ build-local:
 	ARCH=$(ARCH) VERSION=$(VERSION) scripts/build.sh
 
 verify:
-	scripts/verify.sh $(or $(CONFIG),build/.config)
+	scripts/verify.sh $(or $(CONFIG),build/config)
 
 get-config:
 	scripts/get-config.sh
