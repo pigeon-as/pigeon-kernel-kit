@@ -26,7 +26,7 @@ image() {
 }
 
 download() {
-  curl -fsSL "https://cdn.kernel.org/pub/linux/kernel/v${VERSION%%.*}.x/linux-${VERSION}.tar.xz" | tar -xJf -
+  curl -fsSL "https://cdn.kernel.org/pub/linux/kernel/v${VERSION%%.*}.x/linux-${VERSION}.tar.xz" | tar -C build -xJf -
 }
 
 build() {
