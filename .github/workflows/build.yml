@@ -1,0 +1,55 @@
+name: Build Kernel
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  VERSION: "6.1.102"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: make build ARCH=${{ matrix.arch }} VERSION=${{ env.VERSION }}
+
+      - name: Verify
+        run: make verify
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ matrix.arch }}-${{ env.VERSION }}
+          path: build/
+
+  release:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: release/
+
+      - name: Release
+        run: |
+          gh release create "v${{ env.VERSION }}" release/* \
+            --repo "${{ github.repository }}" \
+            --title "v${{ env.VERSION }}" \
+            --notes "Linux kernel ${{ env.VERSION }} for Firecracker micro-VMs" \
+          || gh release upload "v${{ env.VERSION }}" release/* \
+            --repo "${{ github.repository }}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
