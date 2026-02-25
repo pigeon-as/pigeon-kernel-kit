@@ -1,11 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-VERSION="${1:-v1.14.1}"
+FIRECRACKER_VERSION="${1:-v1.14.1}"
+KERNEL_VERSION="${2:-6.1}"
 
 download() {
   curl -fsSL \
-    "https://raw.githubusercontent.com/firecracker-microvm/firecracker/${VERSION}/resources/guest_configs/microvm-kernel-ci-${1}-6.1.config" \
+    "https://raw.githubusercontent.com/firecracker-microvm/firecracker/${FIRECRACKER_VERSION}/resources/guest_configs/microvm-kernel-ci-${1}-${KERNEL_VERSION}.config" \
     --output-dir configs -O
 }
 
