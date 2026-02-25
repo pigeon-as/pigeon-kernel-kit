@@ -30,23 +30,17 @@ download() {
 }
 
 build() {
-  cd "linux-${VERSION}"
-  scripts/kconfig/merge_config.sh -m \
-    "../configs/microvm-kernel-ci-${ARCH}-${VERSION%.*}.config" \
-    "../configs/overlay.config"
-  make ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" olddefconfig
-  make ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" -j"$(nproc)" "$(basename "$(image)")"
-}
-
-copy() {
-  mkdir -p "../build"
-  cp "$(image)" .config "../build/"
+  scripts/kconfig/merge_config.sh -m -O "$(pwd)/build" \
+    "$(pwd)/configs/microvm-kernel-ci-${ARCH}-${VERSION%.*}.config" \
+    "$(pwd)/configs/overlay.config"
+  make -C "build/linux-${VERSION}" O="$(pwd)/build" ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" olddefconfig
+  make -C "build/linux-${VERSION}" O="$(pwd)/build" ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" -j"$(nproc)" "$(basename "$(image)")"
 }
 
 main() {
+  mkdir -p "$(pwd)/build"
   download
   build
-  copy
 }
 
 main
