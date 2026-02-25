@@ -14,7 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            file: vmlinux
+          - arch: aarch64
+            file: Image
     steps:
       - uses: actions/checkout@v4
 
@@ -24,11 +28,13 @@ jobs:
       - name: Verify
         run: make verify
 
+      - run: tar -C build -czf "pigeon-kernel-${{ env.VERSION }}-${{ matrix.arch }}.tar.gz" "${{ matrix.file }}"
+
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: kernel-${{ matrix.arch }}-${{ env.VERSION }}
-          path: build/
+          path: pigeon-kernel-${{ env.VERSION }}-${{ matrix.arch }}.tar.gz
 
   release:
     if: github.ref == 'refs/heads/main'
