@@ -38,10 +38,9 @@ build() {
 }
 
 dist() {
-  cp "$(pwd)/build/.config" "$(pwd)/build/config"
   rm -rf "$(pwd)/dist"
   mkdir -p "$(pwd)/dist"
-  cp "$(pwd)/build/$(image)" "$(pwd)/build/config" "$(pwd)/dist/"
+  cp "$(pwd)/build/$(image)" "$(pwd)/build/.config" "$(pwd)/dist/"
 }
 
 main() {
