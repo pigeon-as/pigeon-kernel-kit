@@ -3,29 +3,11 @@ set -euo pipefail
 
 CONFIG="${1:?missing <config_path>}"
 
-ENABLED=(
-  CONFIG_NET_SCHED
-  CONFIG_BPF
-  CONFIG_BPF_SYSCALL
-  CONFIG_CGROUP_BPF
-  CONFIG_NET_CLS_ACT
-  CONFIG_NET_CLS_BPF
-  CONFIG_NET_ACT_BPF
-  CONFIG_CGROUPS
-  CONFIG_WIREGUARD
-  CONFIG_TUN
-  CONFIG_MD
-  CONFIG_BLK_DEV_DM
-  CONFIG_DM_THIN_PROVISIONING
-  CONFIG_DM_SNAPSHOT
-  CONFIG_DM_CACHE
-  CONFIG_DM_MIRROR
-  CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES
-)
-
-DISABLED=(
-  CONFIG_DAX
-)
+# Auto-discover expected symbols from pigeon fragment configs.
+# No manual list to keep in sync — add a symbol to a fragment and
+# verify.sh picks it up automatically.
+mapfile -t ENABLED < <(grep -h '^CONFIG_.*=y' configs/pigeon/*.config | cut -d= -f1)
+mapfile -t DISABLED < <(grep -h '^# CONFIG_.* is not set' configs/pigeon/*.config | awk '{print $2}')
 
 failures=0
 

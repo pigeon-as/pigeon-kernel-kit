@@ -1,0 +1,63 @@
+name: Release Kernel
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            file: vmlinux
+          - arch: aarch64
+            file: Image
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version from tag
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: make build ARCH=${{ matrix.arch }}
+
+      - name: Verify
+        run: make verify
+
+      - run: tar -C build -czf "pigeon-kernel-${{ steps.ver.outputs.version }}-${{ matrix.arch }}.tar.gz" "${{ matrix.file }}"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ matrix.arch }}
+          path: pigeon-kernel-${{ steps.ver.outputs.version }}-${{ matrix.arch }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Version from tag
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: release/
+
+      - name: Release
+        run: |
+          gh release create "${{ github.ref_name }}" release/* \
+            --repo "${{ github.repository }}" \
+            --title "${{ github.ref_name }}" \
+            --notes "Linux kernel ${{ steps.ver.outputs.version }} for Firecracker micro-VMs" \
+          || gh release upload "${{ github.ref_name }}" release/* \
+            --repo "${{ github.repository }}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

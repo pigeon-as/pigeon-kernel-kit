@@ -1,7 +1,7 @@
 FROM ubuntu:24.04 AS builder
 
 ARG ARCH=x86_64
-ARG VERSION=6.1.102
+ARG VERSION=6.1.155
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bc \

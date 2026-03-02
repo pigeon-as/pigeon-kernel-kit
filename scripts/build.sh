@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-VERSION="${VERSION:-6.1.102}"
+VERSION="${VERSION:-6.1.155}"
 ARCH="${ARCH:-x86_64}"
 
 arch() {
@@ -30,9 +30,12 @@ download() {
 }
 
 build() {
+  # Merge order: FC base → FC fragments → pigeon fragments.
+  # Later values override earlier ones. Globs expand alphabetically.
   bash "build/linux-${VERSION}/scripts/kconfig/merge_config.sh" -m -O build \
-    "configs/microvm-kernel-ci-${ARCH}-${VERSION%.*}.config" \
-    "configs/overlay.config"
+    "configs/firecracker/base-${ARCH}.config" \
+    configs/firecracker/*.config \
+    configs/pigeon/*.config
   make -C "build/linux-${VERSION}" O="$(pwd)/build" ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" olddefconfig
   make -C "build/linux-${VERSION}" O="$(pwd)/build" ARCH="$(arch)" CROSS_COMPILE="$(cross_compile)" -j"$(nproc)" "$(basename "$(image)")"
 }

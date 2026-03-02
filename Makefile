@@ -2,9 +2,10 @@ SHELL := /bin/bash
 .SHELLFLAGS := -euo pipefail -c
 
 ARCH ?= x86_64
-VERSION ?= 6.1.102
+VERSION ?= 6.1.155
+FIRECRACKER_VERSION ?= v1.14.2
 
-.PHONY: build build-local verify get-config clean
+.PHONY: build build-local verify get-config e2e clean
 
 build:
 	docker build \
@@ -20,7 +21,10 @@ verify:
 	scripts/verify.sh $(or $(CONFIG),build/.config)
 
 get-config:
-	scripts/get-config.sh
+	FIRECRACKER_VERSION=$(FIRECRACKER_VERSION) KERNEL_VERSION=$(basename $(VERSION)) scripts/get-config.sh
+
+e2e:
+	scripts/e2e.sh
 
 clean:
 	rm -rf build/ dist/ linux-*

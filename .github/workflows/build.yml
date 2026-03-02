@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  VERSION: "6.1.102"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,39 +20,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build
-        run: make build ARCH=${{ matrix.arch }} VERSION=${{ env.VERSION }}
+        run: make build ARCH=${{ matrix.arch }}
 
       - name: Verify
         run: make verify
-
-      - run: tar -C build -czf "pigeon-kernel-${{ env.VERSION }}-${{ matrix.arch }}.tar.gz" "${{ matrix.file }}"
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: kernel-${{ matrix.arch }}-${{ env.VERSION }}
-          path: pigeon-kernel-${{ env.VERSION }}-${{ matrix.arch }}.tar.gz
-
-  release:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-          path: release/
-
-      - name: Release
-        run: |
-          gh release create "v${{ env.VERSION }}" release/* \
-            --repo "${{ github.repository }}" \
-            --title "v${{ env.VERSION }}" \
-            --notes "Linux kernel ${{ env.VERSION }} for Firecracker micro-VMs" \
-          || gh release upload "v${{ env.VERSION }}" release/* \
-            --repo "${{ github.repository }}" --clobber
-        env:
-          GH_TOKEN: ${{ github.token }}
